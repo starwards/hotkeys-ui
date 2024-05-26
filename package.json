@@ -1,13 +1,13 @@
 {
-  "name": "vite-vanilla-ts-lib-starter",
+  "name": "hotkeys-ui",
   "private": true,
-  "version": "0.0.2",
-  "main": "./dist/vite-vanilla-ts-lib-starter.cjs",
-  "module": "./dist/vite-vanilla-ts-lib-starter.mjs",
+  "version": "0.0.1",
+  "main": "./dist/hotkeys-ui.cjs",
+  "module": "./dist/hotkeys-ui.mjs",
   "exports": {
     ".": {
-      "require": "./dist/vite-vanilla-ts-lib-starter.cjs",
-      "import": "./dist/vite-vanilla-ts-lib-starter.mjs"
+      "require": "./dist/hotkeys-ui.cjs",
+      "import": "./dist/hotkeys-ui.mjs"
     },
     "./dist/": {
       "import": "./dist/",
