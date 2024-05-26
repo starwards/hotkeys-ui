@@ -1,57 +1,57 @@
 {
-  "name": "hotkeys-ui",
-  "private": true,
-  "version": "0.0.1",
-  "main": "./dist/hotkeys-ui.cjs",
-  "module": "./dist/hotkeys-ui.mjs",
-  "exports": {
-    ".": {
-      "require": "./dist/hotkeys-ui.cjs",
-      "import": "./dist/hotkeys-ui.mjs"
+    "name": "hotkeys-ui",
+    "private": true,
+    "version": "0.0.1",
+    "main": "./dist/hotkeys-ui.cjs",
+    "module": "./dist/hotkeys-ui.mjs",
+    "exports": {
+        ".": {
+            "require": "./dist/hotkeys-ui.cjs",
+            "import": "./dist/hotkeys-ui.mjs"
+        },
+        "./dist/": {
+            "import": "./dist/",
+            "require": "./dist/"
+        }
     },
-    "./dist/": {
-      "import": "./dist/",
-      "require": "./dist/"
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "dev": "vite --host",
+        "build": "rimraf build/**/* && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts && copyfiles ./package.json build",
+        "test": "vitest",
+        "test:coverage": "vitest --coverage",
+        "lint": "npm run lint:scripts && npm run lint:styles",
+        "lint:scripts": "eslint . --ext .ts",
+        "lint:styles": "stylelint ./**/*.{css,scss}",
+        "format:scripts": "prettier . --write",
+        "format:styles": "stylelint ./**/*.{css,scss} --fix",
+        "format": "npm run format:scripts && npm run format:styles"
+    },
+    "devDependencies": {
+        "@types/jsdom": "^21.1.6",
+        "@types/node": "^20.12.12",
+        "@typescript-eslint/eslint-plugin": "^7.10.0",
+        "@typescript-eslint/parser": "^7.10.0",
+        "@vitest/coverage-v8": "^1.2.1",
+        "copyfiles": "^2.4.1",
+        "dts-bundle-generator": "^9.5.1",
+        "eslint": "^8.57.0",
+        "eslint-config-prettier": "^9.1.0",
+        "eslint-plugin-prettier": "^5.1.3",
+        "husky": "^9.0.11",
+        "lint-staged": "^15.2.5",
+        "postcss": "^8.4.33",
+        "postcss-scss": "^4.0.9",
+        "prettier": "^3.2.5",
+        "rimraf": "^5.0.7",
+        "stylelint": "^16.2.0",
+        "stylelint-config-recommended": "^14.0.0",
+        "stylelint-config-sass-guidelines": "^11.0.0",
+        "stylelint-order": "^6.0.4",
+        "stylelint-prettier": "^5.0.0",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.4.5",
+        "vite": "^5.2.11",
+        "vitest": "^1.6.0"
     }
-  },
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "dev": "vite --host",
-    "build": "rimraf build/**/* && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts && copyfiles ./package.json build",
-    "test": "vitest",
-    "test:coverage": "vitest --coverage",
-    "lint": "npm run lint:scripts && npm run lint:styles",
-    "lint:scripts": "eslint . --ext .ts",
-    "lint:styles": "stylelint ./**/*.{css,scss}",
-    "format:scripts": "prettier . --write",
-    "format:styles": "stylelint ./**/*.{css,scss} --fix",
-    "format": "npm run format:scripts && npm run format:styles"
-  },
-  "devDependencies": {
-    "@types/jsdom": "^21.1.6",
-    "@types/node": "^20.12.12",
-    "@typescript-eslint/eslint-plugin": "^7.10.0",
-    "@typescript-eslint/parser": "^7.10.0",
-    "@vitest/coverage-v8": "^1.2.1",
-    "copyfiles": "^2.4.1",
-    "dts-bundle-generator": "^9.5.1",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.1.3",
-    "husky": "^9.0.11",
-    "lint-staged": "^15.2.5",
-    "postcss": "^8.4.33",
-    "postcss-scss": "^4.0.9",
-    "prettier": "^3.2.5",
-    "rimraf": "^5.0.7",
-    "stylelint": "^16.2.0",
-    "stylelint-config-recommended": "^14.0.0",
-    "stylelint-config-sass-guidelines": "^11.0.0",
-    "stylelint-order": "^6.0.4",
-    "stylelint-prettier": "^5.0.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.4.5",
-    "vite": "^5.2.11",
-    "vitest": "^1.6.0"
-  }
 }

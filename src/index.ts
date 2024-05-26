@@ -1,3 +1,3 @@
-import "./style.css";
+import './style.css';
 
-export { sum } from "./sum";
+export { sum } from './sum';
