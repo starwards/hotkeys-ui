@@ -3,6 +3,7 @@
 batteries-included game hotkeys solution (UI for help and configuration + logic).
 
 ## What is it
+
 A solution for web game developers to manage and configure hotkeys for tyheir games.
 
 ## Developer Instructions
@@ -19,7 +20,6 @@ It contains the following scripts:
 - `format:scripts` - format `.ts`, `.html` and `.json` files with prettier
 - `format:styles` - format `.cs` and `.scss` files with stylelint
 - `format` - format all with prettier and stylelint
-- `prepare` - script for setting up husky pre-commit hook
 - `uninstall-husky` - script for removing husky from repository
 
 ## Acknowledgment
