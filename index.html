@@ -4,15 +4,92 @@
         <meta charset="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="favicon.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>DEV Hotkeys UI</title>
+        <title>Hotkeys UI Demo Page</title>
+        <style>
+            .paneContainer {
+                flex-grow: 0;
+                flex-shrink: 0;
+                margin-left: auto;
+                margin-right: auto;
+                position: relative;
+                width: 256px;
+            }
+            .paneContainer + .paneContainer {
+                margin-top: 16px;
+            }
+            .paneContainer.paneContainer-dat + .paneContainer {
+                margin-top: 36px;
+            }
+            .paneContainer.paneContainer-dat {
+                width: 245px;
+            }
+            .paneContainer.paneContainer-dat .tp-lblv_v {
+                width: calc(60% + 3px);
+            }
+            .paneContainer.paneContainer-console {
+                --tp-base-background-color: var(--bg-color-secondary);
+                --tp-base-shadow-color: transparent;
+                --tp-button-background-color: hsla(var(--guide-color-comps), 0.04);
+                --tp-button-background-color-active: hsla(var(--guide-color-comps), 0.04);
+                --tp-button-background-color-focus: hsla(var(--guide-color-comps), 0.04);
+                --tp-button-background-color-hover: hsla(var(--guide-color-comps), 0.04);
+                --tp-button-foreground-color: hsla(var(--guide-color-comps), 0.4);
+                --tp-container-background-color: hsla(var(--guide-color-comps), 0.04);
+                --tp-container-background-color-active: hsla(var(--guide-color-comps), 0.04);
+                --tp-container-background-color-focus: hsla(var(--guide-color-comps), 0.04);
+                --tp-container-background-color-hover: hsla(var(--guide-color-comps), 0.04);
+                --tp-container-foreground-color: hsla(var(--guide-color-comps), 0.4);
+                --tp-input-background-color: hsla(var(--guide-color-comps), 0.04);
+                --tp-input-background-color-active: hsla(var(--guide-color-comps), 0.04);
+                --tp-input-background-color-focus: hsla(var(--guide-color-comps), 0.04);
+                --tp-input-background-color-hover: hsla(var(--guide-color-comps), 0.04);
+                --tp-input-foreground-color: hsla(var(--guide-color-comps), 0.4);
+                --tp-monitor-background-color: hsla(var(--guide-color-comps), 0.04);
+                --tp-monitor-foreground-color: hsla(var(--guide-color-comps), 0.4);
+                --tp-label-foreground-color: hsla(var(--guide-color-comps), 0.4);
+                --tp-groove-foreground-color: hsla(var(--guide-color-comps), 0.1);
+            }
+            .paneContainer.paneContainer-console .tp-rotv {
+                border: hsla(var(--guide-color-comps), 0.05) solid 1px;
+            }
+            .nice-button {
+                padding: 10px 20px;
+                font-size: 16px;
+                color: white;
+                background-color: #007bff;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                transition: background-color 0.3s ease;
+            }
+
+            .nice-button:hover {
+                background-color: #0056b3;
+            }
+        </style>
     </head>
     <body>
-        <div id="app"></div>
-        <script type="module" src="/src/index.ts"></script>
+        <h1>Hotkeys UI Demo Page</h1>
+        <div id="app">
+            <button id="niceButton" class="nice-button">Configure UI</button>
+            <div id="pc" class="paneContainer"></div>
+        </div>
         <script type="module">
-            import { openModal } from '/src/index.ts';
-            const container = document.getElementById('app');
-            const pane = openModal(container);
+            import { HotkeysUi } from '/src/index.ts';
+            // keys schema
+            const actions = [
+                {
+                    id: 'Action 1',
+                    type: 'click',
+                    handler: () => {},
+                },
+            ];
+            const defaultConfig = [];
+            const hui = new HotkeysUi(actions, defaultConfig);
+            document.getElementById('niceButton').addEventListener('click', function () {
+                const pane = hui.openModal(document.getElementById('pc'));
+            });
         </script>
     </body>
 </html>
