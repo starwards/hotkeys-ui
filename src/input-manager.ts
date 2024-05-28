@@ -78,8 +78,11 @@ export class InputManager {
             addEventListener('mmk-gamepad-button-value', this.onButton);
             addEventListener('mmk-gamepad-axis-value', this.onAxis);
             for (const key of this.keys) {
-                hotkeys(key.key, { keyup: true }, (e) => {
-                    const value = e.type === 'keydown';
+                let lastEvent = '';
+                hotkeys(key.key, { keyup: true }, ({ type }) => {
+                    if (lastEvent === type) return;
+                    lastEvent = type;
+                    const value = type === 'keydown';
                     if (value && key.onClick) {
                         key.onClick();
                     }
