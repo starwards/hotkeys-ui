@@ -13,46 +13,9 @@
                 margin-right: auto;
                 position: relative;
                 width: 256px;
-            }
-            .paneContainer + .paneContainer {
                 margin-top: 16px;
             }
-            .paneContainer.paneContainer-dat + .paneContainer {
-                margin-top: 36px;
-            }
-            .paneContainer.paneContainer-dat {
-                width: 245px;
-            }
-            .paneContainer.paneContainer-dat .tp-lblv_v {
-                width: calc(60% + 3px);
-            }
-            .paneContainer.paneContainer-console {
-                --tp-base-background-color: var(--bg-color-secondary);
-                --tp-base-shadow-color: transparent;
-                --tp-button-background-color: hsla(var(--guide-color-comps), 0.04);
-                --tp-button-background-color-active: hsla(var(--guide-color-comps), 0.04);
-                --tp-button-background-color-focus: hsla(var(--guide-color-comps), 0.04);
-                --tp-button-background-color-hover: hsla(var(--guide-color-comps), 0.04);
-                --tp-button-foreground-color: hsla(var(--guide-color-comps), 0.4);
-                --tp-container-background-color: hsla(var(--guide-color-comps), 0.04);
-                --tp-container-background-color-active: hsla(var(--guide-color-comps), 0.04);
-                --tp-container-background-color-focus: hsla(var(--guide-color-comps), 0.04);
-                --tp-container-background-color-hover: hsla(var(--guide-color-comps), 0.04);
-                --tp-container-foreground-color: hsla(var(--guide-color-comps), 0.4);
-                --tp-input-background-color: hsla(var(--guide-color-comps), 0.04);
-                --tp-input-background-color-active: hsla(var(--guide-color-comps), 0.04);
-                --tp-input-background-color-focus: hsla(var(--guide-color-comps), 0.04);
-                --tp-input-background-color-hover: hsla(var(--guide-color-comps), 0.04);
-                --tp-input-foreground-color: hsla(var(--guide-color-comps), 0.4);
-                --tp-monitor-background-color: hsla(var(--guide-color-comps), 0.04);
-                --tp-monitor-foreground-color: hsla(var(--guide-color-comps), 0.4);
-                --tp-label-foreground-color: hsla(var(--guide-color-comps), 0.4);
-                --tp-groove-foreground-color: hsla(var(--guide-color-comps), 0.1);
-            }
-            .paneContainer.paneContainer-console .tp-rotv {
-                border: hsla(var(--guide-color-comps), 0.05) solid 1px;
-            }
-            .nice-button {
+            .config-button {
                 padding: 10px 20px;
                 font-size: 16px;
                 color: white;
@@ -64,31 +27,107 @@
                 transition: background-color 0.3s ease;
             }
 
-            .nice-button:hover {
+            .config-button:hover {
                 background-color: #0056b3;
+            }
+            #logContainer {
+                width: 100%;
+                height: 300px;
+                overflow-y: scroll;
+                border: 1px solid #ccc;
+                padding: 10px;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                background-color: #f9f9f9;
+            }
+            .log-entry {
+                margin-bottom: 5px;
+            }
+            .config-form {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                width: 300px;
+                padding: 20px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                background-color: #fff;
+            }
+            .config-form > li {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 5px;
+                border: 1px solid transparent;
+            }
+            .action-name {
+                flex: 1;
+                margin-right: 10px;
+            }
+            .action-key {
+                flex: 1;
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+            }
+            .config-form > button {
+                padding: 10px;
+                border: none;
+                border-radius: 5px;
+                background-color: #007bff;
+                color: #fff;
+                cursor: pointer;
+                margin-top: 20px;
             }
         </style>
     </head>
     <body>
         <h1>Hotkeys UI Demo Page</h1>
         <div id="app">
-            <button id="niceButton" class="nice-button">Configure UI</button>
-            <div id="pc" class="paneContainer"></div>
+            <button id="niceButton" class="config-button">Configure UI</button>
+            <div id="keybindings-container" class="paneContainer"></div>
+            <div id="logContainer"></div>
         </div>
         <script type="module">
             import { HotkeysUi } from '/src/index.ts';
+            const logContainer = document.getElementById('logContainer');
+            const logEntries = [];
+            function addLogEntry(message) {
+                // Add new log entry
+                const timestamp = new Date().toLocaleTimeString();
+                logEntries.push(`${timestamp} - ${message}`);
+
+                // Keep only the last 100 entries
+                if (logEntries.length > 100) {
+                    logEntries.shift();
+                }
+
+                // Update the log container
+                logContainer.innerHTML = logEntries.map((entry) => `<div class="log-entry">${entry}</div>`).join('');
+            }
             // keys schema
             const actions = [
                 {
                     id: 'Action 1',
                     type: 'click',
-                    handler: () => {},
+                    handler: () => {
+                        addLogEntry(`Action 1`);
+                    },
+                },
+                {
+                    id: 'Action 2',
+                    type: 'click',
+                    handler: () => {
+                        addLogEntry(`Action 2`);
+                    },
                 },
             ];
-            const defaultConfig = [];
-            const hui = new HotkeysUi(actions, defaultConfig);
+            const hui = new HotkeysUi(actions);
             document.getElementById('niceButton').addEventListener('click', function () {
-                const pane = hui.openModal(document.getElementById('pc'));
+                const container = document.getElementById('keybindings-container');
+
+                const pane = hui.openModal(container);
             });
         </script>
     </body>

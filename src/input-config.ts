@@ -13,7 +13,14 @@ export class GamepadButtonConfig {
         public buttonIndex: number,
     ) {}
 }
-
+export function isButtonConfig(
+    v: string | GamepadButtonConfig | RangeConfig | undefined,
+): v is string | GamepadButtonConfig {
+    return (
+        typeof v === 'string' ||
+        !!(v && (v as GamepadButtonConfig).gamepadIndex && (v as GamepadButtonConfig).buttonIndex)
+    );
+}
 export class KeysStepsConfig {
     constructor(
         public up: string,
