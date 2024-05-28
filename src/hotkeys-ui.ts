@@ -12,14 +12,14 @@ export type ActionDefinition = {
 };
 
 function printButtonConfig(c: InputConfig | undefined) {
-    if (!isButtonConfig(c)) return '';
-    if (typeof c === 'string') return c;
+    if (!isButtonConfig(c)) return ' ';
+    if (typeof c === 'string') return c || ' ';
     const gamepads = mmk.gamepad.getRawGamepads().filter((g): g is mmk.gamepad.Gamepad => !!g);
     const gamepad = gamepads[c.gamepadIndex];
     return `button ${c.buttonIndex} on ${gamepad.displayId || gamepad.id}`;
 }
 
-const NOOP = () => void 0;
+const NOOP = () => undefined as unknown;
 
 export class HotkeysUi {
     private inputManager = new InputManager();
@@ -45,6 +45,10 @@ export class HotkeysUi {
 
     destroy() {
         this.inputManager.destroy();
+    }
+
+    closeModal() {
+        this.paneCleanup();
     }
 
     openModal(container: HTMLElement) {
@@ -100,10 +104,13 @@ export class HotkeysUi {
         form.appendChild(okButton);
         container.appendChild(form);
 
-        this.paneCleanup = () => {
+        const panelClose = Promise.withResolvers<void>();
+        this.paneCleanup = panelClose.resolve;
+
+        return panelClose.promise.then(() => {
             container.innerHTML = '';
-            this.paneCleanup = () => void 0;
-        };
+            this.paneCleanup = NOOP;
+        });
     }
 
     private startRecording(actionId: string, actionContainer: HTMLElement) {
@@ -118,7 +125,7 @@ export class HotkeysUi {
             }
             hotkeys.unbind('*');
             this.inputManager.init();
-            keyLabel.innerHTML = printButtonConfig(this.keysConfig[actionId]);
+            keyLabel.textContent = printButtonConfig(this.keysConfig[actionId]);
             actionContainer.style.border = '1px solid transparent';
             console.log(`Stopped recording for action: ${actionId}`);
             this.stopRecording = NOOP;
@@ -127,7 +134,7 @@ export class HotkeysUi {
         actionContainer.style.border = '1px solid #007BFF';
         this.keysConfig[actionId] = '';
         let lastKeyStr = '';
-        keyLabel.innerHTML = lastKeyStr;
+        keyLabel.textContent = ' ';
         hotkeys('*', { keyup: true }, (e) => {
             const keysStr = hotkeys
                 .getPressedKeyString()
@@ -155,11 +162,11 @@ export class HotkeysUi {
             if (e.type === 'keyup' && lastKeyStr) {
                 console.log('setting', actionId, lastKeyStr);
                 this.keysConfig[actionId] = lastKeyStr;
-                keyLabel.innerHTML = printButtonConfig(lastKeyStr);
+                keyLabel.textContent = printButtonConfig(lastKeyStr);
                 this.stopRecording();
             } else {
                 lastKeyStr = keysStr;
-                keyLabel.innerHTML = lastKeyStr;
+                keyLabel.textContent = lastKeyStr || ' ';
             }
         });
         console.log(`Started recording for action: ${actionId}`);

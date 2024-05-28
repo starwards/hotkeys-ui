@@ -6,13 +6,58 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Hotkeys UI Demo Page</title>
         <style>
-            .paneContainer {
+            .modal {
+                display: none; /* Hidden by default */
+                position: fixed; /* Stay in place */
+                z-index: 1000; /* Sit on top */
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto; /* Enable scroll if needed */
+                background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+                display: none;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .modal-content {
+                background-color: #fff;
+                margin: 15% auto; /* 15% from the top and centered */
+                padding: 20px;
+                border: 1px solid #888;
+                box-shadow:
+                    0 4px 8px 0 rgba(0, 0, 0, 0.2),
+                    0 6px 20px 0 rgba(0, 0, 0, 0.19);
+                border-radius: 10px;
+                position: relative;
+                display: inline-block; /* Wrap content */
+                max-width: 90%; /* Limit width to 90% of the viewport */
+                width: auto; /* Allow the content to determine the width */
+            }
+
+            .close {
+                color: #aaa;
+                position: absolute;
+                right: 20px;
+                top: 10px;
+                font-size: 28px;
+                font-weight: bold;
+            }
+
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+            .form-container {
                 flex-grow: 0;
                 flex-shrink: 0;
                 margin-left: auto;
                 margin-right: auto;
                 position: relative;
-                width: 256px;
                 margin-top: 16px;
             }
             .config-button {
@@ -50,9 +95,6 @@
                 gap: 10px;
                 width: 300px;
                 padding: 20px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
                 background-color: #fff;
             }
             .config-form > li {
@@ -65,12 +107,14 @@
             .action-name {
                 flex: 1;
                 margin-right: 10px;
+                white-space: pre-wrap;
             }
             .action-key {
                 flex: 1;
                 padding: 5px;
                 border: 1px solid #ccc;
                 border-radius: 3px;
+                white-space: pre-wrap;
             }
             .config-form > button {
                 padding: 10px;
@@ -87,13 +131,22 @@
         <h1>Hotkeys UI Demo Page</h1>
         <div id="app">
             <button id="niceButton" class="config-button">Configure UI</button>
-            <div id="keybindings-container" class="paneContainer"></div>
             <div id="logContainer"></div>
         </div>
         <script type="module">
             import { HotkeysUi } from '/src/index.ts';
             const logContainer = document.getElementById('logContainer');
             const logEntries = [];
+            const modal = document.createElement('div');
+            modal.id = 'modal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <div id="keybindings-container" class="form-container"></div>
+                </div>
+            `;
+            document.body.appendChild(modal);
             function addLogEntry(message) {
                 const timestamp = new Date().toLocaleTimeString();
                 logEntries.push(`${timestamp} - ${message}`);
@@ -120,9 +173,22 @@
                 },
             ];
             const hui = new HotkeysUi(actions);
-            document.getElementById('niceButton').addEventListener('click', function () {
+            document.getElementById('niceButton').addEventListener('click', () => {
+                modal.style.display = 'flex';
                 const container = document.getElementById('keybindings-container');
-                const pane = hui.openModal(container);
+                hui.openModal(container).then(() => {
+                    modal.style.display = 'none';
+                });
+            });
+
+            document.querySelector('.close').addEventListener('click', () => {
+                hui.closeModal();
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target == modal) {
+                    hui.closeModal();
+                }
             });
         </script>
     </body>
