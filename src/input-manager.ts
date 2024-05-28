@@ -138,8 +138,7 @@ export class InputManager {
         }
     }
 
-    addMomentaryClickAction(property: TriggerAction, config: GamepadButtonConfig | string | undefined) {
-        const { setValue } = property;
+    addMomentaryClickAction(setValue: (v: boolean) => unknown, config: GamepadButtonConfig | string | undefined) {
         if (typeof config === 'object') {
             this.buttons.push({ button: config, setValue });
         } else if (typeof config === 'string') {

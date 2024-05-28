@@ -161,14 +161,14 @@
                     id: 'Action 1',
                     type: 'click',
                     handler: () => {
-                        addLogEntry(`Action 1`);
+                        addLogEntry(`Action 1 (click)`);
                     },
                 },
                 {
                     id: 'Action 2',
-                    type: 'click',
-                    handler: () => {
-                        addLogEntry(`Action 2`);
+                    type: 'momentary',
+                    handler: (v) => {
+                        addLogEntry(`Action 2 (momentary) ${v}`);
                     },
                 },
             ];

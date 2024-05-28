@@ -5,12 +5,18 @@ import hotkeys from 'hotkeys-js';
 
 export type InputConfig = string | GamepadButtonConfig | RangeConfig;
 export type ConfigState = Record<string, InputConfig | undefined>;
-export type ActionDefinition = {
+export type ClickActionDefinition = {
     id: string;
     type: 'click';
     handler: () => unknown;
 };
+export type MomentaryClickActionDefinition = {
+    id: string;
+    type: 'momentary';
+    handler: (v: boolean) => unknown;
+};
 
+export type ActionDefinition = ClickActionDefinition | MomentaryClickActionDefinition;
 function printButtonConfig(c: InputConfig | undefined) {
     if (!isButtonConfig(c)) return ' ';
     if (typeof c === 'string') return c || ' ';
@@ -21,6 +27,15 @@ function printButtonConfig(c: InputConfig | undefined) {
 
 const NOOP = () => undefined as unknown;
 
+const TRANSLATE_KEY_STRING = {
+    '⌫': 'backspace',
+    '↩': 'enter',
+    '⇪': 'capslock',
+    '⇧': 'shift',
+    '⌥': 'alt',
+    '⌃': 'ctrl',
+    '⌘': 'cmd',
+} as Record<string, string | undefined>;
 export class HotkeysUi {
     private inputManager = new InputManager();
     private keysConfig: ConfigState = {};
@@ -36,8 +51,14 @@ export class HotkeysUi {
         this.inputManager.destroy();
         for (const ad of this.actions) {
             const state = this.keysConfig[ad.id];
-            if (isButtonConfig(state)) {
-                this.inputManager.addClickAction(ad.handler, state);
+            if (ad.type === 'click') {
+                if (isButtonConfig(state)) {
+                    this.inputManager.addClickAction(ad.handler, state);
+                }
+            } else if (ad.type === 'momentary') {
+                if (isButtonConfig(state)) {
+                    this.inputManager.addMomentaryClickAction(ad.handler, state);
+                }
             }
         }
         this.inputManager.init();
@@ -51,7 +72,7 @@ export class HotkeysUi {
         this.paneCleanup();
     }
 
-    openModal(container: HTMLElement) {
+    async openModal(container: HTMLElement) {
         this.paneCleanup();
         container.innerHTML = '';
 
@@ -107,10 +128,9 @@ export class HotkeysUi {
         const panelClose = Promise.withResolvers<void>();
         this.paneCleanup = panelClose.resolve;
 
-        return panelClose.promise.then(() => {
-            container.innerHTML = '';
-            this.paneCleanup = NOOP;
-        });
+        await panelClose.promise;
+        container.innerHTML = '';
+        this.paneCleanup = NOOP;
     }
 
     private startRecording(actionId: string, actionContainer: HTMLElement) {
@@ -138,26 +158,7 @@ export class HotkeysUi {
         hotkeys('*', { keyup: true }, (e) => {
             const keysStr = hotkeys
                 .getPressedKeyString()
-                .map((keyString) => {
-                    switch (keyString) {
-                        case '⌫':
-                            return 'backspace';
-                        case '↩':
-                            return 'enter';
-                        case '⇪':
-                            return 'capslock';
-                        case '⇧':
-                            return 'shift';
-                        case '⌥':
-                            return 'alt';
-                        case '⌃':
-                            return 'ctrl';
-                        case '⌘':
-                            return 'cmd';
-                        default:
-                            return keyString;
-                    }
-                })
+                .map((keyString) => TRANSLATE_KEY_STRING[keyString] || keyString)
                 .join('+');
             if (e.type === 'keyup' && lastKeyStr) {
                 console.log('setting', actionId, lastKeyStr);
