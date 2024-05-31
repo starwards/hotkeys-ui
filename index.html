@@ -168,7 +168,15 @@
                     id: 'Action 2',
                     type: 'momentary',
                     handler: (v) => {
-                        addLogEntry(`Action 2 (momentary) ${v ? 'on' : 'off'}`);
+                        addLogEntry(`Action 2 (momentary): ${v ? 'on' : 'off'}`);
+                    },
+                },
+                {
+                    id: 'Action 3',
+                    type: 'steps',
+                    step: 1,
+                    handler: (v) => {
+                        addLogEntry(`Action 3 (steps): ${v}`);
                     },
                 },
             ];

@@ -15,8 +15,14 @@ export type MomentaryClickActionDefinition = {
     type: 'momentary';
     handler: (v: boolean) => unknown;
 };
+export type StepsActionDefinition = {
+    id: string;
+    type: 'steps';
+    step: number;
+    handler: (v: number) => unknown;
+};
 
-export type ActionDefinition = ClickActionDefinition | MomentaryClickActionDefinition;
+export type ActionDefinition = ClickActionDefinition | MomentaryClickActionDefinition | StepsActionDefinition;
 function printButtonConfig(c: InputConfig | undefined) {
     if (!isButtonConfig(c)) return ' ';
     if (typeof c === 'string') return c || ' ';
@@ -50,14 +56,21 @@ export class HotkeysUi {
         this.paneCleanup();
         this.inputManager.destroy();
         for (const ad of this.actions) {
-            const state = this.keysConfig[ad.id];
             if (ad.type === 'click') {
+                const state = this.keysConfig[ad.id];
                 if (isButtonConfig(state)) {
                     this.inputManager.addClickAction(ad.handler, state);
                 }
             } else if (ad.type === 'momentary') {
+                const state = this.keysConfig[ad.id];
                 if (isButtonConfig(state)) {
                     this.inputManager.addMomentaryClickAction(ad.handler, state);
+                }
+            } else if (ad.type === 'steps') {
+                const up = this.keysConfig[ad.id + '.up'];
+                const down = this.keysConfig[ad.id + '.down'];
+                if (isButtonConfig(up) && isButtonConfig(down)) {
+                    this.inputManager.addStepsAction(ad.handler, { step: ad.step, up, down });
                 }
             }
         }
@@ -83,28 +96,36 @@ export class HotkeysUi {
         title.textContent = 'Hotkeys UI';
         title.style.marginBottom = '20px';
         form.appendChild(title);
-
-        for (const ad of this.actions) {
-            const state = this.keysConfig[ad.id];
+        const addKeyEntry = (id: string, name: string) => {
+            const state = this.keysConfig[id];
 
             const actionContainer = document.createElement('li');
             const label = document.createElement('label');
             label.classList.add('action-name');
-            label.textContent = ad.id;
+            label.textContent = name;
 
             const keyLabel = document.createElement('label');
             keyLabel.classList.add('action-key');
             keyLabel.textContent = printButtonConfig(state);
-            keyLabel.dataset.action = ad.id;
-
+            // keyLabel.dataset.action = id;
             actionContainer.appendChild(label);
             actionContainer.appendChild(keyLabel);
             form.appendChild(actionContainer);
 
             actionContainer.addEventListener('click', () => {
                 this.stopRecording();
-                this.startRecording(ad.id, actionContainer);
+                this.startRecording(id, actionContainer);
             });
+        };
+
+        for (const ad of this.actions) {
+            const { id, type } = ad;
+            if (type === 'steps') {
+                addKeyEntry(id + '.up', id + ' (Up)');
+                addKeyEntry(id + '.down', id + ' (Down)');
+            } else {
+                addKeyEntry(id, id);
+            }
         }
 
         const okButton = document.createElement('button');

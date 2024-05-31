@@ -23,8 +23,8 @@ export function isButtonConfig(
 }
 export class KeysStepsConfig {
     constructor(
-        public up: string,
-        public down: string,
+        public up: string | GamepadButtonConfig,
+        public down: string | GamepadButtonConfig,
         public step: number,
     ) {}
 }

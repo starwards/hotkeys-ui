@@ -36,9 +36,6 @@ interface ToggleAction {
 export function numberAction(action: { setValue: (v: number) => unknown }): TriggerAction {
     return { setValue: (v: boolean) => action.setValue(Number(v)) };
 }
-interface StepAction {
-    setValue: (v: number) => unknown;
-}
 export class InputManager {
     private axes: AxisListener[] = [];
     private buttons: ButtonListener[] = [];
@@ -162,10 +159,10 @@ export class InputManager {
         }
     }
 
-    addStepsAction(property: StepAction, key: KeysStepsConfig | undefined) {
+    addStepsAction(setValue: (v: number) => unknown, key: KeysStepsConfig | undefined) {
         if (key) {
-            this.keys.push({ key: key.up, onClick: () => void property.setValue(key.step) });
-            this.keys.push({ key: key.down, onClick: () => void property.setValue(-key.step) });
+            this.keys.push({ key: key.up, onClick: () => void setValue(key.step) });
+            this.keys.push({ key: key.down, onClick: () => void setValue(-key.step) });
         }
     }
 }
