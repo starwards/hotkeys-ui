@@ -21,7 +21,7 @@ export function isButtonConfig(
         !!(v && (v as GamepadButtonConfig).gamepadIndex && (v as GamepadButtonConfig).buttonIndex)
     );
 }
-export class KeysStepsConfig {
+export class StepsConfig {
     constructor(
         public up: string | GamepadButtonConfig,
         public down: string | GamepadButtonConfig,

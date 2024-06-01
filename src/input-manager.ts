@@ -3,8 +3,8 @@ import '@maulingmonkey/gamepad';
 import {
     GamepadAxisConfig,
     GamepadButtonConfig,
-    KeysStepsConfig,
     RangeConfig,
+    StepsConfig,
     isGamepadButtonsRangeConfig,
 } from './input-config';
 import { RTuple2, capToRange, isInRange } from './starwards-shim';
@@ -159,10 +159,10 @@ export class InputManager {
         }
     }
 
-    addStepsAction(setValue: (v: number) => unknown, key: KeysStepsConfig | undefined) {
-        if (key) {
-            this.keys.push({ key: key.up, onClick: () => void setValue(key.step) });
-            this.keys.push({ key: key.down, onClick: () => void setValue(-key.step) });
+    addStepsAction(setValue: (v: number) => unknown, config: StepsConfig | undefined) {
+        if (config) {
+            this.addClickAction(() => void setValue(config.step), config.up);
+            this.addClickAction(() => void setValue(-config.step), config.down);
         }
     }
 }
