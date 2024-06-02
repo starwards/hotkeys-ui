@@ -42,4 +42,7 @@ module.exports = defineConfig({
             { find: '@@', replacement: path.resolve(__dirname) },
         ],
     },
+    server: {
+        port: 56667,
+    },
 });

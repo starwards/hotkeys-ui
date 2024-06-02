@@ -1,4 +1,4 @@
-import '@maulingmonkey/gamepad';
+// import '@maulingmonkey/gamepad';
 
 import {
     GamepadAxisConfig,
@@ -11,6 +11,7 @@ import { RTuple2, capToRange, isInRange } from './starwards-shim';
 
 import { EmitterLoop } from './loop';
 import hotkeys from 'hotkeys-js';
+import mmkgp from './maulingmonkey-gamepad';
 
 type AxisListener = { axis: GamepadAxisConfig; range: RTuple2; setValue: (v: number) => unknown };
 type ButtonListener = { button: GamepadButtonConfig; setValue?: (v: boolean) => unknown; onClick?: () => unknown };
@@ -41,7 +42,7 @@ export class InputManager {
     private buttons: ButtonListener[] = [];
     private keys: KeyListener[] = [];
     private loop = new EmitterLoop(1000 / 10);
-    private readonly onButton = (e: mmk.gamepad.GamepadButtonEvent & CustomEvent<undefined>): void => {
+    private readonly onButton = (e: mmkgp.GamepadButtonEvent & CustomEvent<undefined>): void => {
         for (const listener of this.buttons) {
             if (e.buttonIndex === listener.button.buttonIndex && e.gamepadIndex === listener.button.gamepadIndex) {
                 const value = Boolean(e.buttonValue);
@@ -54,7 +55,7 @@ export class InputManager {
             }
         }
     };
-    private readonly onAxis = (e: mmk.gamepad.GamepadAxisEvent & CustomEvent<undefined>): void => {
+    private readonly onAxis = (e: mmkgp.GamepadAxisEvent & CustomEvent<undefined>): void => {
         for (const listener of this.axes) {
             if (e.axisIndex === listener.axis.axisIndex && e.gamepadIndex === listener.axis.gamepadIndex) {
                 let value = e.axisValue;

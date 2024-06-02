@@ -2,6 +2,7 @@ import { GamepadButtonConfig, RangeConfig, isButtonConfig } from './input-config
 
 import { InputManager } from './input-manager';
 import hotkeys from 'hotkeys-js';
+import mmkgp from './maulingmonkey-gamepad';
 
 export type InputConfig = string | GamepadButtonConfig | RangeConfig;
 export type ConfigState = Record<string, InputConfig | undefined>;
@@ -26,7 +27,7 @@ export type ActionDefinition = ClickActionDefinition | MomentaryClickActionDefin
 function printButtonConfig(c: InputConfig | undefined) {
     if (!isButtonConfig(c)) return ' ';
     if (typeof c === 'string') return c || ' ';
-    const gamepads = mmk.gamepad.getRawGamepads().filter((g): g is mmk.gamepad.Gamepad => !!g);
+    const gamepads = mmkgp.getRawGamepads().filter((g): g is mmkgp.Gamepad => !!g);
     const gamepad = gamepads[c.gamepadIndex];
     return `button ${c.buttonIndex} on ${gamepad.displayId || gamepad.id}`;
 }
@@ -160,11 +161,18 @@ export class HotkeysUi {
             return;
         }
         const originalValue = this.keysConfig[actionId];
+        const onButton = ({ gamepadIndex, buttonIndex }: mmkgp.GamepadButtonEvent): void => {
+            const buttonConfig = { gamepadIndex, buttonIndex };
+            this.keysConfig[actionId] = buttonConfig;
+            keyLabel.textContent = printButtonConfig(buttonConfig);
+            this.stopRecording();
+        };
         this.stopRecording = () => {
             if (!this.keysConfig[actionId]) {
                 this.keysConfig[actionId] = originalValue;
             }
             hotkeys.unbind('*');
+            removeEventListener('mmk-gamepad-button-value', onButton);
             this.inputManager.init();
             keyLabel.textContent = printButtonConfig(this.keysConfig[actionId]);
             actionContainer.style.border = '1px solid transparent';
@@ -191,6 +199,7 @@ export class HotkeysUi {
                 keyLabel.textContent = lastKeyStr || ' ';
             }
         });
+        addEventListener('mmk-gamepad-button-value', onButton);
         console.log(`Started recording for action: ${actionId}`);
     }
 }

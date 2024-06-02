@@ -18,7 +18,11 @@ export function isButtonConfig(
 ): v is string | GamepadButtonConfig {
     return (
         typeof v === 'string' ||
-        !!(v && (v as GamepadButtonConfig).gamepadIndex && (v as GamepadButtonConfig).buttonIndex)
+        !!(
+            v &&
+            typeof (v as GamepadButtonConfig).gamepadIndex === 'number' &&
+            typeof (v as GamepadButtonConfig).buttonIndex === 'number'
+        )
     );
 }
 export class StepsConfig {
