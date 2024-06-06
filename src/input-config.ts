@@ -32,34 +32,33 @@ export class StepsConfig {
         public step: number,
     ) {}
 }
-class GamepadButtonsCenterConfig {
-    constructor(public center: GamepadButtonConfig) {}
-}
-class GamepadButtonsRangeConfig {
-    constructor(
-        public up: GamepadButtonConfig,
-        public down: GamepadButtonConfig,
-        public center: GamepadButtonConfig,
-        public step: number,
-    ) {}
-}
+// class GamepadButtonsCenterConfig {
+//     constructor(public center: GamepadButtonConfig | string | undefined) {}
+// }
+// class GamepadButtonsRangeConfig {
+//     constructor(
+//         public up: GamepadButtonConfig | string | undefined,
+//         public down: GamepadButtonConfig | string | undefined,
+//         public center: GamepadButtonConfig | string | undefined,
+//         public step: number,
+//     ) {}
+// }
 
-export function isGamepadButtonsRangeConfig(
-    v: GamepadButtonsRangeConfig | GamepadButtonsCenterConfig,
-): v is GamepadButtonsRangeConfig {
-    return v instanceof GamepadButtonsRangeConfig || !!(v as GamepadButtonsRangeConfig).step;
-}
-export class KeysRangeConfig {
+// export function isGamepadButtonsRangeConfig(
+//     v: GamepadButtonsRangeConfig | GamepadButtonsCenterConfig,
+// ): v is GamepadButtonsRangeConfig {
+//     return v instanceof GamepadButtonsRangeConfig || !!(v as GamepadButtonsRangeConfig).step;
+// }
+export class ClickRangeConfig {
     constructor(
-        public up: string,
-        public down: string,
-        public center: string,
+        public up: GamepadButtonConfig | string | undefined,
+        public down: GamepadButtonConfig | string | undefined,
+        public center: GamepadButtonConfig | string | undefined,
         public step: number,
     ) {}
 }
 
 export interface RangeConfig {
     axis?: GamepadAxisConfig;
-    buttons?: GamepadButtonsRangeConfig | GamepadButtonsCenterConfig;
-    offsetKeys?: KeysRangeConfig;
+    clicks?: ClickRangeConfig;
 }

@@ -1,6 +1,6 @@
-import { HotkeysUi } from '/src/index.ts';
-const logContainer = document.getElementById('logContainer');
-const logEntries = [];
+import { ActionDefinition, HotkeysUi } from '../src/index.ts';
+const logContainer = document.getElementById('logContainer')!;
+const logEntries = ['start of action log'];
 const modal = document.createElement('div');
 modal.id = 'modal';
 modal.className = 'modal';
@@ -43,17 +43,26 @@ const actions = [
             addLogEntry(`Action 3 (steps): ${v}`);
         },
     },
-];
+    {
+        id: 'Action 4',
+        type: 'range',
+        range: [-100, 100],
+        handler: (v) => {
+            addLogEntry(`Action 4 (range): ${v}`);
+        },
+        step: 5,
+    },
+] satisfies ActionDefinition[];
 const hui = new HotkeysUi(actions);
-document.getElementById('niceButton').addEventListener('click', () => {
+document.getElementById('niceButton')!.addEventListener('click', () => {
     modal.style.display = 'flex';
-    const container = document.getElementById('keybindings-container');
+    const container = document.getElementById('keybindings-container')!;
     hui.openModal(container).then(() => {
         modal.style.display = 'none';
     });
 });
 
-document.querySelector('.close').addEventListener('click', () => {
+document.querySelector('.close')!.addEventListener('click', () => {
     hui.closeModal();
 });
 
