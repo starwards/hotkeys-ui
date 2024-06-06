@@ -87,7 +87,7 @@ export class InputManager {
         }
     }
 
-    destroy() {
+    destroy(clear = false) {
         if (this.loop.isStarted()) {
             this.loop.stop();
             removeEventListener('mmk-gamepad-axis-value', this.onAxis);
@@ -95,6 +95,12 @@ export class InputManager {
             for (const key of this.keys) {
                 hotkeys.unbind(key.key);
             }
+        }
+        if (clear) {
+            this.loop.clear();
+            this.axes = [];
+            this.buttons = [];
+            this.keys = [];
         }
     }
 

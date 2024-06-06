@@ -42,4 +42,7 @@ export class EmitterLoop extends BaseLoop {
     onLoop(b: (deltaSeconds: number) => void) {
         this.bodies.push(b);
     }
+    clear() {
+        this.bodies = [];
+    }
 }

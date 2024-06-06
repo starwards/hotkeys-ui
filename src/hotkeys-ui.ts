@@ -1,4 +1,4 @@
-import { GamepadButtonConfig, RangeConfig, isButtonConfig } from './input-config';
+import { GamepadAxisConfig, GamepadButtonConfig, RangeConfig, isButtonConfig } from './input-config';
 import { InputManager, RangeAction } from './input-manager';
 
 import { RTuple2 } from './starwards-shim';
@@ -6,7 +6,8 @@ import hotkeys from 'hotkeys-js';
 import mmkgp from './maulingmonkey-gamepad';
 
 export type ClickConfig = string | GamepadButtonConfig;
-export type ConfigState = Record<string, ClickConfig | undefined>;
+export type ClicksState = Record<string, ClickConfig | undefined>;
+export type AxesState = Record<string, GamepadAxisConfig | undefined>;
 export type ClickActionDefinition = {
     id: string;
     type: 'click';
@@ -45,6 +46,13 @@ function printButtonConfig(c: ClickConfig | undefined) {
     return `button ${c.buttonIndex} on ${gamepad.displayId || gamepad.id}`;
 }
 
+function printAxisConfig(c: GamepadAxisConfig | undefined) {
+    if (!c) return ' ';
+    const gamepads = mmkgp.getRawGamepads().filter((g): g is mmkgp.Gamepad => !!g);
+    const gamepad = gamepads[c.gamepadIndex];
+    return `axis ${c.axisIndex} on ${gamepad.displayId || gamepad.id}`;
+}
+
 const NOOP = () => undefined as unknown;
 
 const TRANSLATE_KEY_STRING = {
@@ -58,7 +66,8 @@ const TRANSLATE_KEY_STRING = {
 } as Record<string, string | undefined>;
 export class HotkeysUi {
     private inputManager = new InputManager();
-    private clickConfig: ConfigState = {};
+    private clicksState: ClicksState = {};
+    private axesState: AxesState = {};
     private paneCleanup = NOOP;
     private stopRecording = NOOP;
 
@@ -67,22 +76,23 @@ export class HotkeysUi {
     }
 
     reset() {
+        this.stopRecording();
         this.paneCleanup();
-        this.inputManager.destroy();
+        this.inputManager.destroy(true);
         for (const ad of this.actions) {
             if (ad.type === 'click') {
-                const state = this.clickConfig[ad.id];
+                const state = this.clicksState[ad.id];
                 if (isButtonConfig(state)) {
                     this.inputManager.addClickAction(ad.handler, state);
                 }
             } else if (ad.type === 'momentary') {
-                const state = this.clickConfig[ad.id];
+                const state = this.clicksState[ad.id];
                 if (isButtonConfig(state)) {
                     this.inputManager.addMomentaryClickAction(ad.handler, state);
                 }
             } else if (ad.type === 'steps') {
-                const up = this.clickConfig[ad.id + '.up'];
-                const down = this.clickConfig[ad.id + '.down'];
+                const up = this.clicksState[ad.id + '.up'];
+                const down = this.clicksState[ad.id + '.down'];
                 if (isButtonConfig(up) && isButtonConfig(down)) {
                     this.inputManager.addStepsAction(ad.handler, { step: ad.step, up, down });
                 }
@@ -92,10 +102,11 @@ export class HotkeysUi {
                     currentValue: ad.currentValue,
                     setValue: ad.handler,
                 };
-                const config: RangeConfig = {};
-                const center = this.clickConfig[ad.id + '.center'];
-                const up = this.clickConfig[ad.id + '.up'];
-                const down = this.clickConfig[ad.id + '.down'];
+                const axis = this.axesState[ad.id];
+                const config: RangeConfig = { axis };
+                const center = this.clicksState[ad.id + '.center'];
+                const up = this.clicksState[ad.id + '.up'];
+                const down = this.clicksState[ad.id + '.down'];
                 const step = ad.step;
                 config.clicks = {
                     up,
@@ -129,7 +140,7 @@ export class HotkeysUi {
         title.style.marginBottom = '20px';
         form.appendChild(title);
         const addKeyEntry = (id: string, name: string) => {
-            const state = this.clickConfig[id];
+            const state = this.clicksState[id];
 
             const actionContainer = document.createElement('li');
             const label = document.createElement('label');
@@ -139,14 +150,31 @@ export class HotkeysUi {
             const keyLabel = document.createElement('label');
             keyLabel.classList.add('action-key');
             keyLabel.textContent = printButtonConfig(state);
-            // keyLabel.dataset.action = id;
             actionContainer.appendChild(label);
             actionContainer.appendChild(keyLabel);
             form.appendChild(actionContainer);
 
             actionContainer.addEventListener('click', () => {
-                this.stopRecording();
-                this.startRecording(id, actionContainer);
+                this.startClickRecording(id, actionContainer);
+            });
+        };
+        const addAxisEntry = (id: string, name: string) => {
+            const state = this.axesState[id];
+
+            const actionContainer = document.createElement('li');
+            const label = document.createElement('label');
+            label.classList.add('action-name');
+            label.textContent = name;
+
+            const keyLabel = document.createElement('label');
+            keyLabel.classList.add('action-key');
+            keyLabel.textContent = printAxisConfig(state);
+            actionContainer.appendChild(label);
+            actionContainer.appendChild(keyLabel);
+            form.appendChild(actionContainer);
+
+            actionContainer.addEventListener('click', () => {
+                this.startAxisRecording(id, actionContainer);
             });
         };
 
@@ -159,6 +187,7 @@ export class HotkeysUi {
                 addKeyEntry(id + '.up', id + ' (Up)');
                 addKeyEntry(id + '.down', id + ' (Down)');
                 addKeyEntry(id + '.center', id + ' (Center)');
+                addAxisEntry(id, id);
             } else {
                 addKeyEntry(id, id);
             }
@@ -169,9 +198,8 @@ export class HotkeysUi {
         okButton.textContent = 'OK';
 
         okButton.addEventListener('click', () => {
-            this.stopRecording();
             for (const ad of this.actions) {
-                const state = this.clickConfig[ad.id];
+                const state = this.clicksState[ad.id];
                 if (state) {
                     console.log(`${ad.id} : ${printButtonConfig(state)}`);
                 }
@@ -190,33 +218,67 @@ export class HotkeysUi {
         this.paneCleanup = NOOP;
     }
 
-    private startRecording(actionId: string, actionContainer: HTMLElement) {
-        const keyLabel = actionContainer.querySelector('.action-key');
-        if (!keyLabel) {
+    private startAxisRecording(actionId: string, actionContainer: HTMLElement) {
+        const axisLabel = actionContainer.querySelector('.action-key');
+        if (!axisLabel) {
             return;
         }
-        const originalValue = this.clickConfig[actionId];
-        const onButton = ({ gamepadIndex, buttonIndex }: mmkgp.GamepadButtonEvent): void => {
-            const buttonConfig = { gamepadIndex, buttonIndex };
-            this.clickConfig[actionId] = buttonConfig;
-            keyLabel.textContent = printButtonConfig(buttonConfig);
+        this.stopRecording();
+        const originalValue = this.clicksState[actionId];
+        const onAxis = ({ gamepadIndex, axisIndex }: mmkgp.GamepadAxisEvent): void => {
+            const axisConfig = { gamepadIndex, axisIndex };
+            this.axesState[actionId] = axisConfig;
+            axisLabel.textContent = printAxisConfig(axisConfig);
             this.stopRecording();
         };
         this.stopRecording = () => {
-            if (!this.clickConfig[actionId]) {
-                this.clickConfig[actionId] = originalValue;
+            if (!this.clicksState[actionId]) {
+                this.clicksState[actionId] = originalValue;
             }
-            hotkeys.unbind('*');
-            removeEventListener('mmk-gamepad-button-value', onButton);
+            removeEventListener('mmk-gamepad-axis-value', onAxis);
             this.inputManager.init();
-            keyLabel.textContent = printButtonConfig(this.clickConfig[actionId]);
+            axisLabel.textContent = printAxisConfig(this.axesState[actionId]);
             actionContainer.style.border = '1px solid transparent';
             console.log(`Stopped recording for action: ${actionId}`);
             this.stopRecording = NOOP;
         };
         this.inputManager.destroy();
         actionContainer.style.border = '1px solid #007BFF';
-        this.clickConfig[actionId] = '';
+        this.clicksState[actionId] = '';
+        axisLabel.textContent = ' ';
+
+        addEventListener('mmk-gamepad-axis-value', onAxis);
+        console.log(`Started recording for action: ${actionId}`);
+    }
+
+    private startClickRecording(actionId: string, actionContainer: HTMLElement) {
+        const keyLabel = actionContainer.querySelector('.action-key');
+        if (!keyLabel) {
+            return;
+        }
+        this.stopRecording();
+        const originalValue = this.clicksState[actionId];
+        const onButton = ({ gamepadIndex, buttonIndex }: mmkgp.GamepadButtonEvent): void => {
+            const buttonConfig = { gamepadIndex, buttonIndex };
+            this.clicksState[actionId] = buttonConfig;
+            keyLabel.textContent = printButtonConfig(buttonConfig);
+            this.stopRecording();
+        };
+        this.stopRecording = () => {
+            if (!this.clicksState[actionId]) {
+                this.clicksState[actionId] = originalValue;
+            }
+            hotkeys.unbind('*');
+            removeEventListener('mmk-gamepad-button-value', onButton);
+            this.inputManager.init();
+            keyLabel.textContent = printButtonConfig(this.clicksState[actionId]);
+            actionContainer.style.border = '1px solid transparent';
+            console.log(`Stopped recording for action: ${actionId}`);
+            this.stopRecording = NOOP;
+        };
+        this.inputManager.destroy();
+        actionContainer.style.border = '1px solid #007BFF';
+        this.clicksState[actionId] = '';
         let lastKeyStr = '';
         keyLabel.textContent = ' ';
         hotkeys('*', { keyup: true }, (e) => {
@@ -226,7 +288,7 @@ export class HotkeysUi {
                 .join('+');
             if (e.type === 'keyup' && lastKeyStr) {
                 console.log('setting', actionId, lastKeyStr);
-                this.clickConfig[actionId] = lastKeyStr;
+                this.clicksState[actionId] = lastKeyStr;
                 keyLabel.textContent = printButtonConfig(lastKeyStr);
                 this.stopRecording();
             } else {
