@@ -225,11 +225,21 @@ export class HotkeysUi {
         }
         this.stopRecording();
         const originalValue = this.clicksState[actionId];
+        const lastAxisEvents: GamepadAxisConfig[] = new Array<GamepadAxisConfig>(7).fill({
+            gamepadIndex: -1,
+            axisIndex: -1,
+        });
         const onAxis = ({ gamepadIndex, axisIndex }: mmkgp.GamepadAxisEvent): void => {
-            const axisConfig = { gamepadIndex, axisIndex };
-            this.axesState[actionId] = axisConfig;
-            axisLabel.textContent = printAxisConfig(axisConfig);
-            this.stopRecording();
+            const curr = { gamepadIndex, axisIndex };
+            // make sure the correct axis is recorded. wait for several events of same axis
+            if (lastAxisEvents.every((e) => e.gamepadIndex === curr.gamepadIndex && e.axisIndex === curr.axisIndex)) {
+                this.axesState[actionId] = curr;
+                axisLabel.textContent = printAxisConfig(curr);
+                this.stopRecording();
+            } else {
+                lastAxisEvents.shift();
+                lastAxisEvents.push(curr);
+            }
         };
         this.stopRecording = () => {
             if (!this.clicksState[actionId]) {

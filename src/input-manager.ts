@@ -11,7 +11,6 @@ type AxisListener = { axis: GamepadAxisConfig; range: RTuple2; setValue: (v: num
 type ButtonListener = { button: GamepadButtonConfig; setValue?: (v: boolean) => unknown; onClick?: () => unknown };
 type KeyListener = { key: string; setValue?: (v: boolean) => unknown; onClick?: () => unknown };
 
-// equiv. to lerp([-1, 1], range, axisValue)
 function lerpAxisToRange(range: RTuple2, axisValue: number) {
     const t = (axisValue + 1) / 2;
     return (1 - t) * range[0] + t * range[1];
