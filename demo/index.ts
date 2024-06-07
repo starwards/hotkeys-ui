@@ -1,4 +1,54 @@
 import { ActionDefinition, HotkeysUi } from '../src/index.ts';
+import { InputEventMap, WebMidi } from 'webmidi';
+
+import { Input, WebMidi } from 'webmidi';
+
+// Enable WEBMIDI.js and trigger the onEnabled() function when ready
+WebMidi.enable()
+    .then(onEnabled)
+    .catch((err) => alert(err));
+
+// Function triggered when WEBMIDI.js is ready
+function onEnabled() {
+    // Display available MIDI input devices
+    if (WebMidi.inputs.length < 1) {
+        console.log('No MIDI device detected.');
+    } else {
+        for (const [index, device] of WebMidi.inputs.entries()) {
+            console.log(`Detected MIDI device ${index}: ${device.name}`);
+
+            // Listen for all MIDI events
+            const eventTypes: Array<keyof InputEventMap> = [
+                'noteon',
+                'noteoff',
+                'controlchange',
+                // 'pitchbend',
+                'programchange',
+                // 'channelaftertouch',
+                'unknownmessage',
+                'midimessage',
+            ];
+
+            for (const eventType of eventTypes) {
+                device.addListener(eventType, (e) => {
+                    console.log(`Event: ${eventType} Device: ${device.name} Channel: ${e.channel} Data: `, e.data);
+                    if (eventType === 'noteon' || eventType === 'noteoff') {
+                        console.log(`Note: ${e.note.name}${e.note.octave} Velocity: ${e.rawVelocity}`);
+                    } else if (eventType === 'controlchange') {
+                        console.log(`Controller: ${e.controller.number} Value: ${e.value}`);
+                    } else if (eventType === 'pitchbend') {
+                        console.log(`Value: ${e.value}`);
+                    } else if (eventType === 'programchange') {
+                        console.log(`Program: ${e.value}`);
+                    } else if (eventType === 'channelaftertouch') {
+                        console.log(`Pressure: ${e.value}`);
+                    }
+                });
+            }
+        }
+    }
+}
+
 const logContainer = document.getElementById('logContainer')!;
 const logEntries = ['start of action log'];
 const modal = document.createElement('div');
