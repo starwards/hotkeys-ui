@@ -35,7 +35,6 @@ module.exports = defineConfig({
             fileName: (format) => fileName[format],
         },
     },
-    test: {},
     resolve: {
         alias: [
             { find: '@', replacement: path.resolve(__dirname, 'src') },
